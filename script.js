@@ -1,15 +1,18 @@
+
+// Elementos del DOM
+const navNext = document.getElementById("navegation__next");
+const navBack = document.getElementById("navegation__back");
+const message = document.getElementsByClassName("text");
 const urlPokemons = "https://pokeapi.co/api/v2/pokemon/";
 const urlTypePokemons = "https://pokeapi.co/api/v2/type/";
 const urlInfoPokemons = "https://pokeapi.co/api/v2/pokemon-species/";
 const urlImgPokemonDetail = "https://assets.pokemon.com/assets/cms2/img/pokedex/detail/";
 const urlImgPokemonFull = "https://assets.pokemon.com/assets/cms2/img/pokedex/full/";
 
-var navNext = $("#navegation__next");
-var navBack = $("#navegation__back");
-var message = $(".text");
 var currentPage = 1;
 
-$("#prevPage").on("click", function () {
+// Evento para el botón de página anterior
+document.getElementById("prevPage").addEventListener("click", function () {
   if (currentPage > 1) {
     currentPage--;
     updatePagination();
@@ -17,24 +20,29 @@ $("#prevPage").on("click", function () {
   }
 });
 
-$("#nextPage").on("click", function () {
+// Evento para el botón de página siguiente
+document.getElementById("nextPage").addEventListener("click", function () {
   currentPage++;
   updatePagination();
   homePokemon();
 });
 
-$("#search__button-type").on("click", function () {
+// Evento para el botón de filtrar por tipo
+document.getElementById("search__button-type").addEventListener("click", function () {
   searchPokemonType();
 });
 
-$("#search__button").on("click", function () {
+// Evento para el botón de buscar por nombre o número
+document.getElementById("search__button").addEventListener("click", function () {
   searchPokemonNumber();
 });
 
+// Función para actualizar la numeración de la página en la interfaz
 function updatePagination() {
-  $("#currentPage").text(`Página ${currentPage}`);
+  document.getElementById("currentPage").textContent = `Página ${currentPage}`;
 }
 
+// Función para crear una tarjeta de Pokémon en la interfaz
 function card(cardPokemon) {
   let idPokemon = cardPokemon.id;
   let idPokemonModal = cardPokemon.id;
@@ -45,7 +53,7 @@ function card(cardPokemon) {
   let colorType = cardPokemon.types;
   let typeBack = "";
   let typeIcon = "";
-  let valueSelect = $("#search__select").val();
+  let valueSelect = document.getElementById("search__select").value;
 
   if (idPokemon < '10') {
     idPokemon = '00' + idPokemon;
@@ -59,7 +67,7 @@ function card(cardPokemon) {
     typeBack += colorType[1].type.name;
   }
 
-  $(".main").append(
+  document.querySelector(".main").insertAdjacentHTML('beforeend',
     `<div class="card col-sm-6 col-md-4 col-xl-3">
       <img src="${urlImgPokemonDetail + idPokemon}.png" class="card__img" alt="${namePokemon}">
       <div class="card__circle"></div>
@@ -76,10 +84,12 @@ function card(cardPokemon) {
   modalPokemon(idPokemon, typeBack, namePokemon, tall, weight, stats, idPokemonModal, typeIcon);
 }
 
+// Función para mostrar un modal con detalles del Pokémon
 function modalPokemon(idPokemon, typeBack, namePokemon, tall, weight, stats, idPokemonModal, typeIcon) {
   $.get(urlInfoPokemons + idPokemonModal, (dataPokemon) => {
     let descriptionPokemon = dataPokemon.flavor_text_entries[26].flavor_text;
 
+    // Llama a la función para obtener stats
     getPokemonStats(idPokemonModal, (stats) => {
       $(".main").append(
         `<div class="modal fade" id="exampleModalCenter${idPokemon}" tabindex="-1" role="dialaria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -123,8 +133,10 @@ function modalPokemon(idPokemon, typeBack, namePokemon, tall, weight, stats, idP
   });
 }
 
+// Función principal para cargar la lista de Pokémon en la interfaz
 function homePokemon() {
-  $(".main").html("");
+  $(".main").html(""); // Limpiar el contenido actual
+
   var offset = (currentPage - 1) * 40;
   var url = urlPokemons + `?offset=${offset}&limit=40`;
 
@@ -141,9 +153,8 @@ function homePokemon() {
     });
 }
 
+// Función para buscar un Pokémon por número o nombre
 function searchPokemonNumber() {
-  navNext.css({ "display": "none" });
-  navBack.css({ "display": "flex" });
   let id = $("#idPokemon").val();
 
   if (id === "") {
@@ -169,9 +180,8 @@ function searchPokemonNumber() {
     });
 }
 
+// Función para buscar Pokémon por tipo
 function searchPokemonType() {
-  navNext.css({ "display": "none" });
-  navBack.css({ "display": "flex" });
   let typeValue = $("#search__select").val();
 
   if (typeValue === null) {
@@ -198,6 +208,7 @@ function searchPokemonType() {
     });
 }
 
+// Función para manejar errores y mostrar mensajes en la interfaz
 function error(text) {
   $(".main").html(`
     <div class="alert alert-danger" role="alert">
@@ -207,6 +218,7 @@ function error(text) {
   );
 }
 
+// Obtener las habilidades de un Pokémon
 function getPokemonStats(id, callback) {
   fetch(urlPokemons + id)
     .then(response => response.json())
@@ -216,10 +228,17 @@ function getPokemonStats(id, callback) {
     });
 }
 
-$.get(urlTypePokemons, type => {
-  type.results.forEach(typePokemon => {
-    $("#search__select").append(`<option class="search__option">${typePokemon.name}</option>`);
+// Obtener la lista de tipos de Pokémon y llenar un menú desplegable en la interfaz
+fetch(urlTypePokemons)
+  .then(response => response.json())
+  .then(type => {
+    type.results.forEach(typePokemon => {
+      $("#search__select").append(`<option class="search__option">${typePokemon.name}</option>`);
+    });
+  })
+  .catch(error => {
+    console.error("Error fetching types:", error);
   });
-});
 
+// Inicializa la página de Pokémon al cargar
 homePokemon();
